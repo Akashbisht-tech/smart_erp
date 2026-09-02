@@ -1,4 +1,6 @@
 const userModel = require("../models/user.model");
+const sessionModel = require("../models/session.model");
+const studentModel = require("../models/students.model");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const jwt  = require("jsonwebtoken");
@@ -6,37 +8,37 @@ const jwt  = require("jsonwebtoken");
 
 
 
-async function registrationController(req, res){
-    const {name, email, password, role, phone} = req.body;
 
-    const user = await userModel.findOne(
-            {email}
-    );
-    if(user){
+
+
+async function registrationController(req, res) {
+    const { name, email, password, role, phone } = req.body;
+
+    const user = await userModel.findOne({ email });
+
+    if (user) {
         return res.status(409).json({
-            message : "student already exist"
-        })
+            message: "user already exist"
+        });
     }
+
     const newUser = await userModel.create({
-        name, 
-        studentId, 
-        email, 
+        name,
+        email,
         password,
         role,
         phone
-    })
+    });
 
     res.status(201).json({
-        message : "studnet created",
-        student : {
-            name : newUser.name,
-            studentId : newUser.studentId,
-            email : newUser.email,
-            role: newUser.role,
-        } 
-    })
+        message: "user created",
+        user: {
+            name: newUser.name,
+            email: newUser.email,
+            role: newUser.role
+        }
+    });
 }
-
 
 
 async function loginController(req, res){
@@ -50,6 +52,7 @@ async function loginController(req, res){
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if(!isMatch){
         return res.status(401).json({
             message : "enter correct email or password"
@@ -57,6 +60,7 @@ async function loginController(req, res){
     }
 
     const refreshToken = jwt.sign({id : user._id}, process.env.JWT_SECRET, { expiresIn: '7d' });
+
     const refreshTokenHash = crypto
         .createHash("sha256")
         .update(refreshToken)
@@ -86,7 +90,8 @@ async function loginController(req, res){
 }
 
 async function refreshTokenController(req, res){
-    const refreshToken = req.cookies.refreshToken;
+    // const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies?.refreshToken;
     if(!refreshToken){
         return res.status(401).json({
             message : "unauthorized"
@@ -132,7 +137,7 @@ async function refreshTokenController(req, res){
 
     const newRefreshToken = jwt.sign({
         id : decoded.id,
-        // id : student._id,
+        // id : user._id,
     }, process.env.JWT_SECRET, 
     {
         expiresIn : "7d"
@@ -164,8 +169,36 @@ async function refreshTokenController(req, res){
 
 }
 
+async function logoutController(req, res){
+    const refreshToken = req.cookies.refreshToken;
+    if(!refreshToken){
+        return res.status(401).json({
+            message : "refresh token not found"
+        })
+    }
+    const refreshTokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+
+    const session = await sessionModel.findOne({refreshTokenHash, revoked : false});
+    if(!session){
+        return res.status(401).json({
+            message : "refresh token not valid"
+        })
+    }
+
+    session.revoked = true;
+    await session.save();
+
+    res.clearCookie("refreshToken");
+
+    res.status(200).json({
+        message : "logout successfully"
+    })
+
+}
+
 module.exports = {
-    registrationController, 
+    registrationController,
     loginController,
-    refreshTokenController
+    refreshTokenController,
+    logoutController
 };

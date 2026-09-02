@@ -24,8 +24,8 @@ const studentSchema = new mongoose.Schema(
 
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Department",
-      required: true,
+      ref: "Department"
+      // required: true,
     },
 
     semester: {
