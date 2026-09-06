@@ -19,7 +19,7 @@ const subjectSchema = new mongoose.Schema(
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",
-      required: true,
+      // required: true,
     },
 
     semester: {

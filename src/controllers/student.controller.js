@@ -20,6 +20,20 @@ async function createStudentProfile(req, res){
         guardianPhone
     } = req.body;
 
+    const user = await userModel.findById(userId);
+    
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found"
+            });
+        }
+    
+        if (user.role !== "student") {
+            return res.status(403).json({
+                message: "User is not a student"
+            });
+        }
+
     const student = await studentModel.findOne({ userId });
 
     if (student) {

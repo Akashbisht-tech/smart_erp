@@ -18,7 +18,7 @@ async function authMiddleware(req, res, next){
     req.user = decoded;
     console.log(req.user);
     
-    // id: "68a123...",
+    // userid (id): "68a123...",
     // role: "student",
     // iat: 1755350000,
     // exp: 175535090

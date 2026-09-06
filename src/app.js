@@ -8,6 +8,9 @@ app.use(cookieParser());
 
 const authRouter = require("./routers/auth.route");
 const studentRouter = require("./routers/student.route");
+const facultyRouter = require("./routers/faculty.route");
+const adminRouter = require("./routers/admin.route");
+const attendanceRouter = require("./routers/attendence.route");
 
 
 /**
@@ -20,7 +23,21 @@ app.use("/api/auth", authRouter );
  */
 app.use("/api/student", studentRouter );
 
+/**
+ * profile, assigned subjects
+ */
+app.use("/api/faculty", facultyRouter)
 
+
+/**
+ * users, departments, subjects, management
+ */
+app.use("/api/admin", adminRouter )
+
+/**
+ * mark, update, student attendance, percentage
+ */
+app.use("/api/attendance", attendanceRouter)
 
 module.exports = app;
 
