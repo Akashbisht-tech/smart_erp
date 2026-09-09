@@ -17,7 +17,7 @@ const marksSchema = new mongoose.Schema(
     examId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Exam",
-      required: true,
+      // required: true,
     },
 
     marksObtained: {

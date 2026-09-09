@@ -85,7 +85,104 @@ async function getStudentAttendance(req, res){
 
 }
 
+async function getAttendancePercentage(req, res) {
+    try {
+        // 1. Find logged-in student
+        const student = await studentModel.findOne({
+            userId: req.user.id
+        });
+
+        if (!student) {
+            return res.status(404).json({
+                message: "student not found"
+            });
+        }
+
+        // 2. Get attendance and group it subject-wise
+        const attendance = await attendanceModel.aggregate([
+            {
+                $match: {
+                    studentId: student._id
+                }
+            },
+
+            {
+                $group: {
+                    _id: "$subjectId",
+
+                    total: {
+                        $sum: 1
+                    },
+
+                    present: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ["$status", "present"] },
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+
+            {
+                $project: {
+                    _id: 0,
+                    subjectId: "$_id",
+                    total: 1,
+                    present: 1,
+
+                    percentage: {
+                        $multiply: [
+                            {
+                                $divide: ["$present", "$total"]
+                            },
+                            100
+                        ]
+                    }
+                }
+            }
+        ]);
+
+        if (attendance.length === 0) {
+            return res.status(404).json({
+                message: "no attendance record found"
+            });
+        }
+
+        // 3. Get subject details
+        const result = await Promise.all(
+            attendance.map(async (item) => {
+
+                const subject = await subjectModel.findById(
+                    item.subjectId
+                );
+
+                return {
+                    subject: subject ? subject.code : "Unknown",
+                    present: item.present,
+                    total: item.total,
+                    percentage: item.percentage
+                };
+            })
+        );
+
+        res.status(200).json({
+            message: "attendance percentage fetched successfully",
+            attendance: result
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "failed to fetch attendance percentage",
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     markAttendence,
-    getStudentAttendance
+    getStudentAttendance,
+    getAttendancePercentage
 }

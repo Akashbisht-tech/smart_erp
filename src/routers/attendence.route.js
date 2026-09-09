@@ -23,5 +23,9 @@ router.post("/mark", authentication, authorization("faculty"), attendanceControl
  */
 router.get("/student-attendance", authentication, authorization("student"), attendanceController.getStudentAttendance);
 
+/**
+ * GET /api/attendance/student-attendance-percentage
+ */
+router.get("/student-attendance-percentage", authentication, authorization("student"), attendanceController.getAttendancePercentage);
 
 module.exports = router;

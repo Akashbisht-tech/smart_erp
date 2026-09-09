@@ -11,6 +11,7 @@ const studentRouter = require("./routers/student.route");
 const facultyRouter = require("./routers/faculty.route");
 const adminRouter = require("./routers/admin.route");
 const attendanceRouter = require("./routers/attendence.route");
+const marksRouter = require("./routers/marks.route");
 
 
 /**
@@ -38,6 +39,11 @@ app.use("/api/admin", adminRouter )
  * mark, update, student attendance, percentage
  */
 app.use("/api/attendance", attendanceRouter)
+
+/**
+ * create, update, student marks, performance
+ */
+app.use("/api/marks", marksRouter)
 
 module.exports = app;
 
