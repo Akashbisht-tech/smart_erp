@@ -12,7 +12,14 @@ const facultyRouter = require("./routers/faculty.route");
 const adminRouter = require("./routers/admin.route");
 const attendanceRouter = require("./routers/attendence.route");
 const marksRouter = require("./routers/marks.route");
+const assignmentRouter = require("./routers/assignment.router");
 
+
+
+const path = require("path");
+
+app.use("/uploads",express.static(path.join(__dirname, "uploads"))
+);
 
 /**
  * register, login, refresh, logout
@@ -44,6 +51,14 @@ app.use("/api/attendance", attendanceRouter)
  * create, update, student marks, performance
  */
 app.use("/api/marks", marksRouter)
+
+
+/**
+ * create, list, submit, statu
+ */
+app.use("/api/assignments", assignmentRouter)
+
+// app.use("")
 
 module.exports = app;
 
