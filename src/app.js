@@ -14,6 +14,8 @@ const attendanceRouter = require("./routers/attendence.route");
 const marksRouter = require("./routers/marks.route");
 const assignmentRouter = require("./routers/assignment.router");
 
+const timetableRouter = require("./routers/timetable.router");
+
 
 
 const path = require("path");
@@ -58,7 +60,11 @@ app.use("/api/marks", marksRouter)
  */
 app.use("/api/assignments", assignmentRouter)
 
-// app.use("")
+/**
+ * create, update, student/faculty timetable
+ */
+
+app.use("/api/timetable", timetableRouter )
 
 module.exports = app;
 
