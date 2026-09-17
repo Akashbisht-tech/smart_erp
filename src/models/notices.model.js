@@ -37,7 +37,6 @@ const noticeSchema = new mongoose.Schema(
 
     publishedAt: {
       type: Date,
-      default: Date.now,
     },
 
     expiresAt: {
@@ -46,7 +45,7 @@ const noticeSchema = new mongoose.Schema(
 
     isPublished: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   {

@@ -4,6 +4,13 @@ const studentModel = require("../models/students.model");
 const submissionModel = require("../models/submissions.model");
 
 
+const {
+    createNotification
+} = require("./notification.controller");
+
+
+
+
 async function createAssignment(req, res) {
     try {
         const {
@@ -177,9 +184,70 @@ async function assignmentStatus(req, res) {
     }
 }
 
+async function generateAssignmentAlerts() {
+    try {
+        const now = new Date();
+
+        const tomorrow = new Date();
+        tomorrow.setHours(
+            tomorrow.getHours() + 24
+        );
+
+        // Find assignments due within next 24 hours
+        const assignments = await assignmentModel.find({
+            dueDate: {
+                $gte: now,
+                $lte: tomorrow
+            },
+            status: "published"
+        });
+
+        for (const assignment of assignments) {
+
+            // Find students of the assignment department
+            const students = await studentModel.find({
+                departmentId: assignment.assignedTo
+            });
+
+            for (const student of students) {
+
+                // Check whether student already submitted
+                const submission = await submissionModel.findOne({
+                    assignmentId: assignment._id,
+                    studentId: student._id
+                });
+
+                // If not submitted
+                if (!submission) {
+
+                    await createNotification({
+                        userId: student.userId,
+
+                        title: "Assignment Due Soon",
+
+                        message:
+                            `${assignment.title} is due soon. Please submit it before the deadline.`,
+
+                        type: "smart_alert",
+
+                        relatedId: assignment._id
+                    });
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error(
+            "Assignment smart alert error:",
+            error.message
+        );
+    }
+}
+
 module.exports = {
     createAssignment,
     listAssignments,
     submitAssignment,
-    assignmentStatus
+    assignmentStatus,
+    generateAssignmentAlerts
 };

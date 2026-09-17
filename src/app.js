@@ -13,8 +13,11 @@ const adminRouter = require("./routers/admin.route");
 const attendanceRouter = require("./routers/attendence.route");
 const marksRouter = require("./routers/marks.route");
 const assignmentRouter = require("./routers/assignment.router");
-
 const timetableRouter = require("./routers/timetable.router");
+const noticeRouter = require("./routers/notice.route");
+const notificationRouter = require("./routers/notification.router");
+const analyticsRoutes = require("./routers/analytics.router");
+
 
 
 
@@ -65,6 +68,25 @@ app.use("/api/assignments", assignmentRouter)
  */
 
 app.use("/api/timetable", timetableRouter )
+
+/**
+ * create, list, publish
+ */
+
+app.use("/api/notice", noticeRouter);
+
+/**
+ * list, read, smart alerts
+ */
+
+app.use("/api/notification", notificationRouter);
+
+
+/**
+ * attendance, marks, risk analysis
+ */
+app.use("/api/analytics", analyticsRoutes);
+
 
 module.exports = app;
 
