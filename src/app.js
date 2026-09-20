@@ -17,6 +17,7 @@ const timetableRouter = require("./routers/timetable.router");
 const noticeRouter = require("./routers/notice.route");
 const notificationRouter = require("./routers/notification.router");
 const analyticsRoutes = require("./routers/analytics.router");
+const aiRoutes = require("./routers/ai.routes");
 
 
 
@@ -86,6 +87,9 @@ app.use("/api/notification", notificationRouter);
  * attendance, marks, risk analysis
  */
 app.use("/api/analytics", analyticsRoutes);
+
+
+app.use("/api/ai", aiRoutes);
 
 
 module.exports = app;
