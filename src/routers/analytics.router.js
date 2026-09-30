@@ -8,7 +8,8 @@ const authorization = require("../middlewares/authorization.middleware");
 const {
     getAttendanceAnalytics,
     getMarksAnalytics,
-    getRiskAnalysis
+    getRiskAnalysis,
+    getDashboardAnalytics
 } = require("../controllers/analytics.controller");
 
 // attendance, marks, risk analysis
@@ -39,6 +40,8 @@ router.get(
     authorization("student"),
     getRiskAnalysis
 );
+
+router.get("/dashborad", authentication, authorization("student"), getDashboardAnalytics );
 
 
 module.exports = router;

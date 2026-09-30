@@ -146,7 +146,7 @@ async function getMarksAnalytics(req, res) {
         const marks = await marksModel.find({
             studentId: student._id
         })
-        .populate("subjectId", "name code");
+            .populate("subjectId", "name code");
 
 
         if (marks.length === 0) {
@@ -394,8 +394,224 @@ async function getRiskAnalysis(req, res) {
 }
 
 
+async function getDashboardAnalytics(req, res) {
+    try {
+
+        // ==========================
+        // FIND LOGGED-IN STUDENT
+        // ==========================
+
+        const student = await studentModel.findOne({
+            userId: req.user.id
+        });
+
+        if (!student) {
+            return res.status(404).json({
+                message: "student not found"
+            });
+        }
+
+
+        // ==========================
+        // ATTENDANCE
+        // ==========================
+
+        const attendanceData = await attendanceModel.aggregate([
+
+            {
+                $match: {
+                    studentId: student._id
+                }
+            },
+
+            {
+                $group: {
+                    _id: null,
+
+                    totalClasses: {
+                        $sum: 1
+                    },
+
+                    presentClasses: {
+                        $sum: {
+                            $cond: [
+                                {
+                                    $eq: ["$status", "present"]
+                                },
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+
+
+        let totalClasses = 0;
+        let presentClasses = 0;
+        let absentClasses = 0;
+        let attendancePercentage = 0;
+
+
+        if (attendanceData.length > 0) {
+
+            totalClasses = attendanceData[0].totalClasses;
+
+            presentClasses = attendanceData[0].presentClasses;
+
+            absentClasses =
+                totalClasses - presentClasses;
+
+            attendancePercentage =
+                (presentClasses / totalClasses) * 100;
+        }
+
+
+        // ==========================
+        // MARKS
+        // ==========================
+
+        const marks = await marksModel.find({
+            studentId: student._id
+        });
+
+
+        let totalObtained = 0;
+        let totalMaximum = 0;
+        let marksPercentage = 0;
+
+
+        marks.forEach((item) => {
+
+            totalObtained += item.marksObtained;
+
+            totalMaximum += item.maxMarks;
+        });
+
+
+        if (totalMaximum > 0) {
+
+            marksPercentage =
+                (totalObtained / totalMaximum) * 100;
+        }
+
+
+        // ==========================
+        // RISK ANALYSIS
+        // ==========================
+
+        let riskLevel = "Low";
+
+        const reasons = [];
+
+
+        if (attendancePercentage < 75) {
+
+            reasons.push(
+                "Attendance is below 75%"
+            );
+        }
+
+
+        if (
+            marksPercentage < 50 &&
+            marks.length > 0
+        ) {
+
+            reasons.push(
+                "Academic performance is low"
+            );
+        }
+
+
+        // High Risk
+
+        if (
+            attendancePercentage < 60 ||
+            (
+                marksPercentage < 40 &&
+                marks.length > 0
+            )
+        ) {
+
+            riskLevel = "High";
+        }
+
+        // Medium Risk
+
+        else if (
+            attendancePercentage < 75 ||
+            (
+                marksPercentage < 60 &&
+                marks.length > 0
+            )
+        ) {
+
+            riskLevel = "Medium";
+        }
+
+
+        // ==========================
+        // FINAL RESPONSE
+        // ==========================
+
+        res.status(200).json({
+
+            message:
+                "dashboard analytics fetched successfully",
+
+            attendance: {
+
+                totalClasses,
+
+                presentClasses,
+
+                absentClasses,
+
+                percentage:
+                    Number(
+                        attendancePercentage.toFixed(2)
+                    )
+            },
+
+            marks: {
+
+                totalObtained,
+
+                totalMaximum,
+
+                percentage:
+                    Number(
+                        marksPercentage.toFixed(2)
+                    )
+            },
+
+            risk: {
+
+                level: riskLevel,
+
+                reasons
+            }
+        });
+
+
+    } catch (error) {
+
+        res.status(500).json({
+
+            message:
+                "failed to fetch dashboard analytics",
+
+            error: error.message
+        });
+    }
+}
+
+
 module.exports = {
     getAttendanceAnalytics,
     getMarksAnalytics,
-    getRiskAnalysis
+    getRiskAnalysis,
+    getDashboardAnalytics
 };
